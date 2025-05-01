@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdbool.h>
+#include<time.h>
 
 typedef struct
 {
@@ -27,13 +28,58 @@ typedef struct
     responsavel responsavel;
 }tarefa;
 
+data obterDataHoje(){
+    time_t t= time(NULL);
+    struct tm tm = *localtime(&t);
+
+    data hoje;
+    hoje.dias = tm.tm_mday;
+    hoje.mes = tm.tm_mon + 1;
+    hoje.ano = tm.tm_year + 1900;
+
+    return hoje;
+}
+
 int diferencaDias(data dataInicio,data dataFim ){
     int diasInicio = dataInicio.ano * 360 + dataInicio.mes*30 + dataInicio.dias;
     int diasFim = dataFim.ano * 360 + dataFim.mes * 30 + dataFim.dias;
 
     return diasFim - diasInicio;
 }
+void ordenarTarefas(tarefa listaTarefas[100]){
 
+    for (int i = 0; i < 100; i++)
+    {
+        
+    }
+    
+
+}
+void menuEquipas(responsavel listaResponsavel){
+
+    int opcao;
+    do
+    {
+        printf("0 - Sair\n1 - Determinar duracao media de realizacao de tarefas de uma equipa\n2 - Determinar numero de tarefas concluidas por uma equipa dentro e fora do prazo\n3 - Determinar o numero de tarefas em execucao de uma equipa\nIndique a opcao que deseja: ");
+        scanf("%d", &opcao);
+        switch (opcao)
+        {
+        case 1:
+
+            
+            break;  
+        case 2:
+            
+            break;
+        case 3:
+            break;
+        default:
+            printf("Indique uma opcao dentro das indicadas!");
+            break;
+        }
+    } while (opcao != 0);
+    
+}
 void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
 
     char nomeTarefa[20];
@@ -70,14 +116,16 @@ void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
         {
             printf("Nome de tarefa incorreto ou nao presente na lista de tarefas");
         }
-        
-        
-        
     } while (true);
     
 }
 void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     char nomeTarefa[20];
+    char novaDataLimite [10];
+    bool responsavelEncontrado = false;
+    char nomeResponsavel[20];
+    char novaDescricao[50];
+
     int opcao;
     do
     {
@@ -90,23 +138,21 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
             if (strcmp(listaTarefas[i].nomeTarefa, nomeTarefa) == 0 && !listaTarefas[i].eliminada)
             {
                 
-                int opcao;
+                int opcao=0;
                 do
                 {
-                    printf("Indique que dados pretende alterar da tarefa:\n1 - Data limite de execucao\n2 - Responsavel\n3 - Descricao\n");
+                    printf("Indique que dados pretende alterar da tarefa:\n0 - Sair\n1 - Data limite de execucao\n2 - Responsavel\n3 - Descricao\n");
                     scanf("%d", &opcao);
                     switch (opcao)
                     {
                     case 1:
-                        char novaDataLimite [10];
                         printf("Indique a nova data a inserir na tarefa [dd/mm/aaaa]: ");
                         scanf("%s", novaDataLimite);
                         sscanf(novaDataLimite, "%d/%d/%d", &listaTarefas[i].dataLimiteExecucao.dias, &listaTarefas[i].dataLimiteExecucao.mes, &listaTarefas[i].dataLimiteExecucao.ano);
                         printf("Data limite de execucao alterada com sucesso! \n");                 
                         break;
                     case 2:
-                    bool responsavelEncontrado = false;
-                        char nomeResponsavel[20];
+                        
                         printf("Indique o nome do responsavel/equipa responsavel a atribuir");
                         for (int i = 0; i < 100; i++)
                         {
@@ -128,11 +174,10 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
                         break;
                     case 3:
 
-                        char novaDescricao[50];
                         printf("Indique nova descricao a inserir na tarefa");
                         scanf("%s", novaDescricao);
                         strcpy(listaTarefas[i].descricao, novaDescricao);
-                        printf("Descricao alterada com sucesso!");
+                        printf("Descricao alterada com sucesso!\n");
                         break;
                     default:
                         break;
@@ -221,9 +266,11 @@ void concluirTarefa(tarefa listaTarefas[100]){
 
     } while (true);
 }
-void menuListagemTarefas(tarefa listaTarefas[100]){
+void menuListagemTarefas(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     int opcao;
     int count;
+    data hoje = obterDataHoje();
+    char nomeEquipa[20];
 
     do
     {
@@ -238,9 +285,13 @@ void menuListagemTarefas(tarefa listaTarefas[100]){
             {
                 if (listaTarefas[i].concluida == 0 && !listaTarefas[i].eliminada)
                 {
+                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
+                        break;
+                    }
                     printf("Nome: %s\n", listaTarefas[i].nomeTarefa);
                     printf("Data de criacao da tarefa: %d/%d/%d\n", listaTarefas[i].dataCriacao.dias, listaTarefas[i].dataCriacao.mes, listaTarefas[i].dataCriacao.ano);
                     count++;
+                    
                 }
             }
             if(count == 0)
@@ -255,6 +306,9 @@ void menuListagemTarefas(tarefa listaTarefas[100]){
             {
                 if (listaTarefas[i].concluida == 1 && !listaTarefas[i].eliminada)
                 {
+                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
+                        break;
+                    }
                     printf("Nome: %s\n", listaTarefas[i].nomeTarefa);
                     duracao = diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
                     printf("Esta tarefa demorou %d dias a ser concluida\n", duracao);
@@ -268,7 +322,80 @@ void menuListagemTarefas(tarefa listaTarefas[100]){
             }
             break;
             case 3:
+                count = 0;
+                printf("Tarefas em execucao que ultrapassaram o prazo de conclusao: ");
+                for (int i = 0; i < 100; i++)
+                {
+                    if (!listaTarefas[i].concluida && !listaTarefas[i].eliminada && diferencaDias(listaTarefas[i].dataLimiteExecucao, hoje) < 0)
+                    {
+                        if(listaTarefas[i].nomeTarefa[0] == '\0'){
+                            break;
+                        }
+                        printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
+                        printf("Data limite de execucao da tarefa: %d/%d/%d", listaTarefas[i].dataLimiteExecucao.dias,listaTarefas[i].dataLimiteExecucao.mes,listaTarefas[i].dataLimiteExecucao.ano);
+                        count++;
+                    }
+                    
+                }
+                if(count == 0){
+                    printf("Nao existem tarefas em atraso\n");
+                }
                 break;
+            case 4:
+                count = 0;
+                printf("Tarefas concluidas com atraso: \n");
+                for (int i = 0; i < 100; i++)
+                {
+                    if (listaTarefas[i].concluida && !listaTarefas[i].eliminada && diferencaDias(listaTarefas[i].dataLimiteExecucao, listaTarefas[i].dataConclusao) < 0)
+                    {
+                        if(listaTarefas[i].nomeTarefa[0] == '\0'){
+                            break;
+                        }
+                        int duracao = diferencaDias(listaTarefas[i].dataLimiteExecucao, listaTarefas[i].dataConclusao);
+                        printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
+                        printf("Dias de atraso: %d\n", -(duracao));
+                        count++;
+                    }
+                    
+                }
+                if(count == 0){
+                    printf("Não existem tarefas concluidas com atraso\n");
+                    break;
+                }
+                break;
+            case 5:
+                count = 0;
+                do
+                {
+                    printf("Indique um nome presente na equipa de que pretende listar as tarefas: ");
+                    scanf("%s", nomeEquipa);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        if (!listaTarefas[i].eliminada)
+                        {
+                            for (int j = 0; j < listaTarefas[i].responsavel.numMembros; j++)
+                            {
+                                if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa) == 0)
+                                {
+                                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
+                                        break;
+                                    }
+                                    printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
+                                    printf("Data de conclusao da tarefa: %d/%d/%d\n", listaTarefas[i].dataConclusao.dias, listaTarefas[i].dataConclusao.mes, listaTarefas[i].dataConclusao.ano);
+                                    count++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (count == 0)
+                    {
+                        printf("Nao foi encontrada nenhuma tarefa com o nome indicado\n");
+                    }
+                    
+                } while (true);
+            
+            break;
         default:
             break;
         }
@@ -340,6 +467,7 @@ void menuCriacaoEquipa(responsavel listaResponsavel[100]){
                 if (listaResponsavel[i].nomes[0][0] == '\0')
                 {
                     listaResponsavel[i] = responsavel1;
+                    break;
                 }
             }
             printf("Responsavel adicionado com sucesso!\n");
@@ -382,7 +510,7 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     int opcao;
     do
     {
-        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de listagem de tarefas\n8 - Menu de equipas\nIndique a opcao que deseja: ");
+        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de listagem de tarefas\n8 - Ordenar tarefas nao concluidas por ordem de urgencia\n9 - Menu de equipas\nIndique a opcao que deseja: ");
         scanf("%d", &opcao);
         switch (opcao)
         {
@@ -406,7 +534,7 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
             alocarEquipa(listaTarefas, listaResponsavel);
             break;
         case 7:
-            menuListagemTarefas(listaTarefas);
+            menuListagemTarefas(listaTarefas, listaResponsavel);
             break;
         default:
             printf("Termino do programa");
