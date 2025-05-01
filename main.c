@@ -46,17 +46,27 @@ int diferencaDias(data dataInicio,data dataFim ){
 
     return diasFim - diasInicio;
 }
+//Utiliza Bubblesort
 void ordenarTarefas(tarefa listaTarefas[100]){
-
-    for (int i = 0; i < 100; i++)
+    tarefa temp;
+    for (int i = 0; i < 99; i++)
     {
-        
+        for (int j = 0; j < 99-i; j++)
+        {
+            if (!listaTarefas[j].concluida && !listaTarefas[j+1].concluida)
+            {
+                if (diferencaDias(listaTarefas[j].dataLimiteExecucao, listaTarefas[j+1].dataLimiteExecucao) > 0)
+                {
+                    temp = listaTarefas[j];
+                    listaTarefas[j] = listaTarefas[j+1];
+                    listaTarefas[j+1];
+                }
+            }
+        }
     }
-    
-
 }
-void menuEquipas(responsavel listaResponsavel){
-
+void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
+    char nomeEquipa[20];
     int opcao;
     do
     {
@@ -65,20 +75,101 @@ void menuEquipas(responsavel listaResponsavel){
         switch (opcao)
         {
         case 1:
-
-            
+            printf("Indique o nome da equipa a pesquisar: ");
+            scanf("%s", nomeEquipa);
+            int duracoes = 0;
+            int count = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
+                {
+                    for (int j = 0; j < 20; j++)
+                    {
+                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
+                        {
+                            int duracao = diferencaDias(listaTarefas[i].dataConclusao, listaTarefas[i].dataCriacao);
+                            duracoes += duracao;
+                            count++;
+                            break;
+                        }
+                    }
+                }  
+            }
+            if (count > 0)
+            {
+                float media = (float)duracoes / count;
+                printf("Duracao media de realizacao das tarefas concluidas pela equipa %s e %f\n", nomeEquipa, media);
+            }
+            if (count == 0)
+            {
+                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
+            }
             break;  
         case 2:
-            
+            printf("Indique o nome da equipa a pesquisar: ");
+            scanf("%s", nomeEquipa);
+            int duracoes = 0;
+            int countTarefasDentroPrazo = 0;
+            int countTarefasForaPrazo = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
+                {
+                    for (int j = 0; j < 20; j++)
+                    {
+                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
+                        {
+                            if (diferencaDias(listaTarefas[i].dataConclusao, listaTarefas[i].dataLimiteExecucao) <= 0)
+                            {
+                                countTarefasDentroPrazo++;
+                                break;
+                            }
+                            else{
+                                countTarefasForaPrazo++;
+                                break;
+                            }
+                        }
+                    }
+                }  
+            }
+            if (countTarefasDentroPrazo == 0 && countTarefasForaPrazo == 0)
+            {
+                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
+            }
             break;
         case 3:
-            break;
-        default:
-            printf("Indique uma opcao dentro das indicadas!");
-            break;
+            printf("Indique o nome da equipa a pesquisar: ");
+            scanf("%s", nomeEquipa);
+            int count = 0;
+            int duracao;
+            data hoje = obterDataHoje();
+            for (int i = 0; i < 100; i++)
+            {
+                if (!listaTarefas[i].concluida && !listaTarefas[i].eliminada)
+                {
+                    for (int j = 0; j < 20; j++)
+                    {
+                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
+                        {
+                            duracao = diferencaDias(hoje, listaTarefas[i].dataCriacao);
+                            printf("A tarefa de nome %s esta em execucao a %d dias\n", listaTarefas[i].nomeTarefa, duracao);
+                            count++;
+                        }
+                    }
+                }  
+            }
+            if (count == 0)
+            {
+                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
+            }
+            else{
+                printf("Existem %d tarefas em execucao", count);
+            }
+            default:
+                printf("Indique uma opcao dentro das indicadas!");
+                break;
         }
     } while (opcao != 0);
-    
 }
 void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
 
