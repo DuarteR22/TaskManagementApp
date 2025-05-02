@@ -59,7 +59,7 @@ void ordenarTarefas(tarefa listaTarefas[100]){
                 {
                     temp = listaTarefas[j];
                     listaTarefas[j] = listaTarefas[j+1];
-                    listaTarefas[j+1];
+                    listaTarefas[j+1] = temp;
                 }
             }
         }
@@ -108,7 +108,6 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
         case 2:
             printf("Indique o nome da equipa a pesquisar: ");
             scanf("%s", nomeEquipa);
-            int duracoes = 0;
             int countTarefasDentroPrazo = 0;
             int countTarefasForaPrazo = 0;
             for (int i = 0; i < 100; i++)
@@ -140,7 +139,7 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
         case 3:
             printf("Indique o nome da equipa a pesquisar: ");
             scanf("%s", nomeEquipa);
-            int count = 0;
+            int countExecucao = 0;
             int duracao;
             data hoje = obterDataHoje();
             for (int i = 0; i < 100; i++)
@@ -153,7 +152,7 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
                         {
                             duracao = diferencaDias(hoje, listaTarefas[i].dataCriacao);
                             printf("A tarefa de nome %s esta em execucao a %d dias\n", listaTarefas[i].nomeTarefa, duracao);
-                            count++;
+                            countExecucao++;
                         }
                     }
                 }  
@@ -161,9 +160,11 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
             if (count == 0)
             {
                 printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
+                break;
             }
             else{
-                printf("Existem %d tarefas em execucao", count);
+                printf("Existem %d tarefas em execucao", countExecucao);
+                break;
             }
             default:
                 printf("Indique uma opcao dentro das indicadas!");
@@ -601,7 +602,7 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     int opcao;
     do
     {
-        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de listagem de tarefas\n8 - Ordenar tarefas nao concluidas por ordem de urgencia\n9 - Menu de equipas\nIndique a opcao que deseja: ");
+        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de listagem de tarefas\n8 - Ordenar tarefas nao concluidas por ordem de urgencia\n9 - Menu de equipas\n10 - Criar ficheiro com as tarefas concluidas do ano\nIndique a opcao que deseja: ");
         scanf("%d", &opcao);
         switch (opcao)
         {
