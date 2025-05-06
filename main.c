@@ -97,6 +97,7 @@ void guardarFicheiroTarefasConcluidas(tarefa listaTarefas[100]){
                     fprintf(ficheiro, "Equipa: ");
                     for (int j = 0; j < listaTarefas[i].responsavel.numMembros; j++)
                     {
+                        printf("Membro %d: %s\n", j, listaTarefas[i].responsavel.nomes[j]);
                         fprintf(ficheiro, "%s", listaTarefas[i].responsavel.nomes[j]);
                         if (j < listaTarefas[i].responsavel.numMembros - 1) //Verifica se a vírgula não está a ser colocada no final da lista de nomes
                         {
@@ -123,11 +124,11 @@ void guardarFicheiroTarefasConcluidas(tarefa listaTarefas[100]){
         }
     }
     fclose(ficheiro);
-    printf("Ficheiro CSV criado com sucesso!\n");
+    printf("Ficheiro CSV criado com sucesso\n");
 }
 int diferencaDias(data dataInicio,data dataFim ){
-    int diasInicio = dataInicio.ano * 360 + dataInicio.mes*30 + dataInicio.dias;
-    int diasFim = dataFim.ano * 360 + dataFim.mes * 30 + dataFim.dias;
+    int diasInicio = dataInicio.ano * 365 + dataInicio.mes*30 + dataInicio.dias;
+    int diasFim = dataFim.ano * 365 + dataFim.mes * 30 + dataFim.dias;
 
     return diasFim - diasInicio;
 }
@@ -149,6 +150,7 @@ void ordenarTarefas(tarefa listaTarefas[100]){
             }
         }
     }
+    printf("Tarefas ordenadas com sucesso!\n");
 }
 void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
     char nomeEquipa[20];
@@ -183,7 +185,7 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
             if (count > 0)
             {
                 float media = (float)duracoes / count;
-                printf("Duracao media de realizacao das tarefas concluidas pela equipa %s e %f\n", nomeEquipa, media);
+                printf("Duracao media de realizacao das tarefas concluidas pela equipa %s em dias e %f\n", nomeEquipa, -(media));
             }
             if (count == 0)
             {
@@ -238,11 +240,12 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
                             duracao = diferencaDias(hoje, listaTarefas[i].dataCriacao);
                             printf("A tarefa de nome %s esta em execucao a %d dias\n", listaTarefas[i].nomeTarefa, duracao);
                             countExecucao++;
+                            break;
                         }
                     }
                 }  
             }
-            if (count == 0)
+            if (countExecucao == 0)
             {
                 printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
                 break;
@@ -257,44 +260,53 @@ void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
         }
     } while (opcao != 0);
 }
-void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
 
+void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]) {
     char nomeTarefa[20];
     char nomeEquipa[20];
 
-    bool encontrouTarefa = false;
-    bool encontrouResponsavel = false;
-    do
-    {
-        printf("Indique a tarefa a que pretende alocar uma equipa: \n");
+    bool encontrouTarefa;
+    bool encontrouResponsavel;
+
+    do {
+        encontrouTarefa = false;
+        encontrouResponsavel = false;
+
+        printf("Indique a tarefa a que pretende alocar uma equipa: ");
         scanf("%s", nomeTarefa);
-        for (int i = 0; i < 100; i++)
-        {
-            if (strcmp(listaTarefas[i].nomeTarefa, nomeTarefa) == 0 && !listaTarefas[i].eliminada)
-            {
+
+        printf("Tarefa procurada: %s\n", nomeTarefa);
+
+        for (int i = 0; i < 100; i++) {
+            if (strcmp(listaTarefas[i].nomeTarefa, nomeTarefa) == 0 && !listaTarefas[i].eliminada) {
                 encontrouTarefa = true;
-                printf("Indique o nome de um responsavel da equipa que pretende alocar a tarefa de nome %s", listaTarefas[i].nomeTarefa);
+                printf("Tarefa encontrada: %s\n", listaTarefas[i].nomeTarefa);
+                printf("Indique o nome de um responsavel da equipa que pretende alocar a tarefa de nome %s: ", listaTarefas[i].nomeTarefa);
                 scanf("%s", nomeEquipa);
-                for (int j = 0; j < listaResponsavel[j].numMembros; j++)
-                {
-                    if(strcmp(listaResponsavel[i].nomes[j], nomeEquipa) == 0){
-                        listaTarefas[i].responsavel = listaResponsavel[j];
-                        printf("Equipa alocada com sucesso a tarefa de nome %s", listaTarefas[i].nomeTarefa);
-                        encontrouResponsavel = true;
+                for (int j = 0; j < 100; j++) {
+                    if (listaResponsavel[j].numMembros > 0) {
+                        for (int k = 0; k < listaResponsavel[j].numMembros; k++) {
+                            if (strcmp(listaResponsavel[j].nomes[k], nomeEquipa) == 0) {
+                                listaTarefas[i].responsavel = listaResponsavel[j];
+                                printf("Equipa alocada com sucesso a tarefa de nome %s\n", listaTarefas[i].nomeTarefa);
+                                encontrouResponsavel = true;
+                                break;
+                            }
+                        }
                     }
+                    if (encontrouResponsavel) break;
                 }
+            break; 
             }
         }
-        if (encontrouResponsavel == false)
-        {
-            printf("Nome de responsavel incorreto ou nao presente na lista de responsaveis");
+        if (!encontrouTarefa) {
+            printf("Nome de tarefa incorreto ou nao presente na lista de tarefas\n");
         }
-        if (encontrouTarefa == false)
-        {
-            printf("Nome de tarefa incorreto ou nao presente na lista de tarefas");
+        if (!encontrouResponsavel) {
+            printf("Nome de responsavel incorreto ou nao presente na lista de responsaveis\n");
         }
+        break;
     } while (true);
-    
 }
 void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     char nomeTarefa[20];
@@ -326,7 +338,7 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
                         printf("Indique a nova data a inserir na tarefa [dd/mm/aaaa]: ");
                         scanf("%s", novaDataLimite);
                         sscanf(novaDataLimite, "%d/%d/%d", &listaTarefas[i].dataLimiteExecucao.dias, &listaTarefas[i].dataLimiteExecucao.mes, &listaTarefas[i].dataLimiteExecucao.ano);
-                        printf("Data limite de execucao alterada com sucesso! \n");                 
+                        printf("Data de execucao limite alterada com sucesso! \n");                 
                         break;
                     case 2:
                         
@@ -337,7 +349,7 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
                             {
                                 if(strcmp(listaResponsavel[i].nomes[j], nomeResponsavel) == 0){
                                     listaTarefas[i].responsavel = listaResponsavel[i];
-                                    printf("Responsavel alterado com sucesso!\n");
+                                    printf("Responsavel alterado com sucesso\n");
                                     responsavelEncontrado = true;
                                     break;
                                 }
@@ -351,8 +363,8 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
                         break;
                     case 3:
 
-                        printf("Indique nova descricao a inserir na tarefa");
-                        scanf("%s", novaDescricao);
+                        printf("Indique nova descricao a inserir na tarefa: ");
+                        scanf("%s\n", novaDescricao);
                         strcpy(listaTarefas[i].descricao, novaDescricao);
                         printf("Descricao alterada com sucesso!\n");
                         break;
@@ -364,7 +376,7 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
             }
         }
 
-        if (!encontrada) {
+        if (!encontrada && opcao != 0) {
             printf("Nenhuma tarefa encontrada com o nome indicado!\n0 - Sair\n1 - Tentar novamente\n");
             scanf("%d", &opcao);
             if (opcao == 0) break;
@@ -756,9 +768,8 @@ void menuListagemTarefas(tarefa listaTarefas[100], responsavel listaResponsavel[
             break;
         }
     } while (opcao != 0);
-    
-    
 }
+
 void menuRegistoTarefa(tarefa listaTarefas[100]){
 
     tarefa tarefa1;
@@ -772,7 +783,7 @@ void menuRegistoTarefa(tarefa listaTarefas[100]){
     printf("Indique a data limite de execucao da tarefa [dd/mm/aaaa]: ");
     scanf("%s", dataLimiteExecucao);
     sscanf(dataLimiteExecucao, "%d/%d/%d", &tarefa1.dataLimiteExecucao.dias,&tarefa1.dataLimiteExecucao.mes,&tarefa1.dataLimiteExecucao.ano);
-    printf("Indique a data limite de conclusao da tarefa [dd/mm/aaaa]: ");
+    printf("Indique a data de conclusao da tarefa [dd/mm/aaaa]: ");
     scanf("%s", dataConclusao);
     sscanf(dataConclusao, "%d/%d/%d", &tarefa1.dataConclusao.dias,&tarefa1.dataConclusao.mes,&tarefa1.dataConclusao.ano);
     printf("Indique a descricao da tarefa a executar: ");
@@ -801,66 +812,59 @@ void menuRegistoTarefa(tarefa listaTarefas[100]){
     
 }
 
-void menuCriacaoEquipa(responsavel listaResponsavel[100]){
+void menuCriacaoEquipa(responsavel listaResponsavel[100]) {
     int opcao1;
     int numMembros;
     char nome[20];
     responsavel responsavel1;
-    do
-    {
+
+    do {
         printf("Indique se a equipa de adicionar se trata de uma pessoa ou uma equipa de varias: \n0 - Sair\n1 - Unica pessoa\n2 - Equipa\n");
         scanf("%d", &opcao1);
-        switch (opcao1)
-        {
-        case 1:
-            printf("Indique o nome do responsavel: ");
-            scanf("%s", nome);
-            strcpy(responsavel1.nomes[0], nome);
-            responsavel1.numMembros = 1;
-            responsavel1.equipa = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaResponsavel[i].nomes[0][0] == '\0')
-                {
-                    listaResponsavel[i] = responsavel1;
+        switch (opcao1) {
+            case 1:
+                printf("Indique o nome do responsavel: ");
+                scanf("%s", nome); 
+                strcpy(responsavel1.nomes[0], nome);
+                responsavel1.numMembros = 1;
+                responsavel1.equipa = 0;
+                for (int i = 0; i < 100; i++) {
+                    if (listaResponsavel[i].nomes[0][0] == '\0') {
+
+                        listaResponsavel[i] = responsavel1;
+                        break;
+                    }
+                }
+                printf("Responsavel adicionado com sucesso!\n");
+                break;
+
+            case 2:
+                printf("Indique o numero de membros da equipa a adicionar: ");
+                scanf("%d", &numMembros);
+                if (numMembros > 20) {
+                    printf("Numero de membros excede o limite de 20.\n");
                     break;
                 }
-            }
-            printf("Responsavel adicionado com sucesso!\n");
-            char c;
-            printf("Prima qualquer tecla para regressar ao menu de criacao de equipas");
-            getchar();
-            scanf("%c", &c);
-            break;
-        case 2:
-            printf("Indique o numero de membros da equipa a adicionar: ");
-            scanf("%d", &numMembros);
-            responsavel1.numMembros = numMembros;
-            responsavel1.equipa = 1;
-            for (int i = 0; i < numMembros; i++)
-            {
-                printf("Indique o nome do %dº membro da equipa: ", i+1);
-                scanf("%s", nome);
-                strcpy(responsavel1.nomes[i], nome);
-                for (int i = 0; i < 100; i++)
-            {
-                if (listaResponsavel[i].nomes[0][0] == '\0')
-                {
-                    listaResponsavel[i] = responsavel1;
+                responsavel1.numMembros = numMembros;
+                responsavel1.equipa = 1;
+
+                for (int i = 0; i < numMembros; i++) {
+                    printf("Indique o nome do %dº membro da equipa: ", i + 1);
+                    scanf("%s",nome); 
+                    strcpy(responsavel1.nomes[i], nome);
                 }
-            }
-            }
-            printf("Equipa de responsaveis adicionado com sucesso!\n");
-            printf("Prima qualquer tecla para regressar ao menu principal");
-            getchar();
-            scanf("%c", &c);
-            break;
-        default:
-            break;
+                for (int i = 0; i < 100; i++) {
+                    if (listaResponsavel[i].nomes[0][0] == '\0') {
+                        listaResponsavel[i] = responsavel1;
+                        break;
+                    }
+                }
+                printf("Equipa de responsaveis adicionada com sucesso!\n");
+                break;
+            default:
+                break;
         }
-        
     } while (opcao1 != 0);
-    printf("Equipa adicionada com sucesso!\n");
 }
 void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
     int opcao;
@@ -889,8 +893,14 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
         case 6:
             alocarEquipa(listaTarefas, listaResponsavel);
             break;
+        case 8:
+            ordenarTarefas(listaTarefas);
+            break;
         case 7:
             menuListagemTarefas(listaTarefas, listaResponsavel);
+            break;
+        case 9:
+            menuEquipas(listaResponsavel, listaTarefas);
             break;
         case 10:
             guardarFicheiroTarefasConcluidas(listaTarefas);
@@ -900,8 +910,8 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
             break;
         }
     } while (opcao != 0);
-    
 }
+
 int main(){
 
 
