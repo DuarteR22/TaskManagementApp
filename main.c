@@ -88,8 +88,8 @@ void guardarFicheiroTarefasConcluidas(tarefa listaTarefas[100]){
     {
         if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
         {
-            if (listaTarefas[i].dataConclusao.ano == hoje.ano)
-            {
+            //if (listaTarefas[i].dataConclusao.ano == hoje.ano)
+            //{
                 listaTarefas[i].eliminada = true;
                 fprintf(ficheiro, "%s;", listaTarefas[i].nomeTarefa);
                 if (listaTarefas[i].responsavel.equipa)
@@ -120,12 +120,13 @@ void guardarFicheiroTarefasConcluidas(tarefa listaTarefas[100]){
                     }
                 }
                 fprintf(ficheiro, "\n");
-            }  
+            //}  
         }
     }
     fclose(ficheiro);
     printf("Ficheiro CSV criado com sucesso\n");
 }
+
 int diferencaDias(data dataInicio,data dataFim ){
     int diasInicio = dataInicio.ano * 365 + dataInicio.mes*30 + dataInicio.dias;
     int diasFim = dataFim.ano * 365 + dataFim.mes * 30 + dataFim.dias;
@@ -288,6 +289,7 @@ void alocarEquipa(tarefa listaTarefas[100], responsavel listaResponsavel[100]) {
                         for (int k = 0; k < listaResponsavel[j].numMembros; k++) {
                             if (strcmp(listaResponsavel[j].nomes[k], nomeEquipa) == 0) {
                                 listaTarefas[i].responsavel = listaResponsavel[j];
+                                listaTarefas[i].responsavel.equipa = true;
                                 printf("Equipa alocada com sucesso a tarefa de nome %s\n", listaTarefas[i].nomeTarefa);
                                 encontrouResponsavel = true;
                                 break;
@@ -372,7 +374,7 @@ void alterarTarefa(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
                         break;
                     }
                 } while (opcao != 0);
-                
+                printf("Nenhuma tarefa encontrada com o nome indicado\n");
             }
         }
 
@@ -875,7 +877,6 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
         switch (opcao)
         {
         case 1:
-
             menuRegistoTarefa(listaTarefas);
             break;  
         case 2:
