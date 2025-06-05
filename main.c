@@ -37,8 +37,6 @@ typedef struct projeto
     char nomeResponsavel[20];
     data dataInicio;
     data dataConclusao;
-    bool cancelado;
-    bool eliminado;
     tarefa *tarefasConcluidas;
     tarefa *tarefasNaoConcluidas;
 }projeto;
@@ -98,11 +96,19 @@ int diferencaDias(data dataInicio,data dataFim ){
 //Função auxiliar para ir buscar o índice do projeto através do seu nome
 int indiceProjetoAux(projeto listaProjetos[100], char nomeProjeto[50]) {
     for (int i = 0; i < 100; i++) {
-        if (!listaProjetos[i].eliminado && strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0) {
+        if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0) {
             return i;
         }
     }
     return -1;
+}
+//Função auxiliar que pretende indicar se o projeto se encontra cancelado
+bool verificaCancelado(projeto p){
+
+    if(p.tarefasConcluidas == NULL && p.tarefasNaoConcluidas == NULL)
+        return true;
+
+    return false;
 }
 void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
     char nomeEquipa[20];
@@ -355,7 +361,7 @@ void eliminarTarefa(projeto listaProjetos[100]){
     bool eliminada = false;
     bool encontrou = true;
     int opcao;
-    printf("Indique o nome do projeto que pretende alterar a tarefa: ");
+    printf("Indique o nome do projeto que pretende eliminar a tarefa: ");
     scanf("%s", nomeProjeto);
 
     int indiceProjeto = indiceProjetoAux(listaProjetos,nomeProjeto);
@@ -365,7 +371,7 @@ void eliminarTarefa(projeto listaProjetos[100]){
         printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
-    printf("Indique o nome da tarefa a concluir: ");
+    printf("Indique o nome da tarefa a eliminar: ");
     scanf("%s", nomeTarefa);
 
     tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
@@ -440,317 +446,6 @@ void concluirTarefa(projeto listaProjetos[100]){
     {
         printf("Nenhuma tarefa encontrada com o nome indicado!\n");
     }
-}
-void menuTarefasEliminadas(tarefa listaTarefas[100]){
-    int opcao;
-    int countCase1=0,countCase2=0, countCase3=0;
-    int duracaoCase1=0,duracaoCase2=0, duracaoCase3=0, duracaoCase4=0;
-    int maxDuracao = -10, maxDuracaoAno = -10;
-    int minDuracao = 10000000, minDuracaoAno = 10000000;
-    int iMax = -1,iMaxAno = -1;
-    int iMin = -1,iMinAno = -1;
-    int anoMedia1,anoMedia2;
-    int anoMaxMin;
-    do
-    {
-        printf("Indique a opcao que listagem que deseja:\n0 - Sair\n1 - Duracao media de realizacao de tarefas concluidas e nao eliminadas\n2 - Duracao maxima e minima de uma tarefa concluida e nao eliminada\n3 - Duracao media de realizacao de tarefas eliminadas e concluidas para um ano\n4 - Duracao maxima e minima de uma tarefa eliminada e concluida para um ano\n");
-        scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            for (int i = 0; i < 100; i++)
-            {
-                if (!listaTarefas[i].eliminada && listaTarefas[i].concluida)
-                {
-                    duracaoCase1 += diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
-                    countCase1++;
-                }
-            }
-            if (countCase1 == 0)
-            {
-                printf("Nao existem tarefas concluidas para elaborar a media!\n");
-            }
-            else
-                printf("A duracao media das tarefas concluidas e %f\n", duracaoCase1/countCase1);
-        break;
-        case 2:
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
-                {
-                    duracaoCase2 = diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
-                    if (duracaoCase2 > maxDuracao)
-                    {
-                        maxDuracao = duracaoCase2;
-                        iMax = i;
-                    }
-                    if (duracaoCase2 < minDuracao)
-                    {
-                        minDuracao = duracaoCase2;
-                        iMin = i;
-                    }   
-                }
-            }
-            if (iMax != -1 && iMin != -1)
-            {
-                printf("Tarefa com maior duracao:\n");
-                printf("Nome da tarefa: %s\n", listaTarefas[iMax].nomeTarefa);
-                printf("Duracao: %d dias\n", maxDuracao);
-                printf("Responsavel: ");
-                if (listaTarefas[iMax].responsavel.equipa)
-                {
-                    for (int j = 0; j < listaTarefas[iMax].responsavel.numMembros; j++)
-                    {
-                        printf("%s", listaTarefas[iMax].responsavel.nomes[j]);
-                        if (j < listaTarefas[iMax].responsavel.numMembros - 1)
-                            printf(", ");
-                    }
-                }
-            else{
-                printf("%s", listaTarefas[iMax].responsavel.nomes[0]);
-            }
-            printf("\n");
-            
-            printf("Tarefa com menor duracao:\n");
-            printf("Nome da tarefa: %s\n", listaTarefas[iMin].nomeTarefa);
-            printf("Duracao: %d dias\n", minDuracao);
-            printf("Responsavel: ");
-            if (listaTarefas[iMin].responsavel.equipa)
-                {
-                    for (int j = 0; j < listaTarefas[iMin].responsavel.numMembros; j++)
-                    {
-                        printf("%s", listaTarefas[iMin].responsavel.nomes[j]);
-                        if (j < listaTarefas[iMin].responsavel.numMembros - 1)
-                            printf(", ");
-                    }
-                }
-            else{
-                printf("%s", listaTarefas[iMin].responsavel.nomes[0]);
-                
-            }
-            printf("\n");
-        }else
-            printf("Nao existem tarefas concluidas para analisar duracoes\n");            
-        break;
-        case 3:
-            printf("Indique o ano em que pretende pesquisar a duracao media de conclusao das tarefas: ");
-            scanf("%d", &anoMedia1);
-
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida && listaTarefas[i].eliminada && listaTarefas[i].dataConclusao.ano == anoMedia1)
-                {
-                    duracaoCase3 += diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
-                    countCase3++;
-                }
-            }
-            if (countCase3 == 0)
-            {
-                printf("Nao existem tarefas concluidas do ano %d", anoMedia1);
-                break;
-            }
-            else
-                printf("A duracao media das tarefas concluidas do ano %d e %f\n",anoMedia1, (float) duracaoCase3/countCase3);
-        break;
-        case 4:
-            printf("Indique o ano em que pretende pesquisar a duracao maxima e minima de conclusao das tarefas: ");
-            scanf("%d", &anoMedia2);
-
-            for (int i = 0; i < 100; i++)
-                {
-                    if (listaTarefas[i].concluida && listaTarefas[i].eliminada && listaTarefas[i].dataConclusao.ano == anoMedia2)
-                    {
-                        duracaoCase4 = diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
-                        if (duracaoCase4 > maxDuracaoAno)
-                        {
-                            maxDuracaoAno = duracaoCase4;
-                            iMaxAno = i;
-                        }
-                        if (duracaoCase4 < minDuracaoAno)
-                        {
-                            minDuracaoAno = duracaoCase4;
-                            iMinAno = i;
-                        }   
-                    }
-                }
-                if (iMaxAno != -1 && iMinAno != -1)
-                {
-                    printf("Tarefa com maior duracao:\n");
-                    printf("Nome da tarefa: %s\n", listaTarefas[iMaxAno].nomeTarefa);
-                    printf("Duracao: %d dias\n", maxDuracaoAno);
-                    printf("Responsavel: ");
-                    if (listaTarefas[iMaxAno].responsavel.equipa)
-                    {
-                        for (int j = 0; j < listaTarefas[iMaxAno].responsavel.numMembros; j++)
-                        {
-                            printf("%s", listaTarefas[iMaxAno].responsavel.nomes[j]);
-                            if (j < listaTarefas[iMaxAno].responsavel.numMembros - 1)
-                                printf(", ");
-                        }
-                    }
-                else{
-                    printf("%s", listaTarefas[iMaxAno].responsavel.nomes[0]);
-                }
-                printf("\n");
-                printf("Tarefa com menor duracao:\n");
-                printf("Nome da tarefa: %s\n", listaTarefas[iMinAno].nomeTarefa);
-                printf("Duracao: %d dias\n", minDuracaoAno);
-                printf("Responsavel: ");
-                if (listaTarefas[iMinAno].responsavel.equipa)
-                    {
-                        for (int j = 0; j < listaTarefas[iMinAno].responsavel.numMembros; j++)
-                        {
-                            printf("%s", listaTarefas[iMinAno].responsavel.nomes[j]);
-                            if (j < listaTarefas[iMinAno].responsavel.numMembros - 1)
-                                printf(", ");
-                        }
-                    }
-                else{
-                    printf("%s", listaTarefas[iMinAno].responsavel.nomes[0]);
-                }
-                printf("\n");
-            }else
-                printf("Nao existem tarefas concluidas para analisar duracoes\n");            
-        break;
-        default:
-            printf("Escolha uma opcao entre as indicadas!\n");
-            break;
-        }
-    } while (opcao != 0);
-}
-void menuListagemTarefas(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
-    int opcao;
-    int count;
-    data hoje = obterDataHoje();
-    char nomeEquipa[20];
-
-    do
-    {
-        printf("Indique a opcao que listagem que deseja:\n0 - Sair\n1 - Listar tarefas em execucao\n2 - Listar tarefas concluidas\n3 - Listar tarefas concluidas em execucao\n4 - Listar tarefas concluidas com atraso\n5 - Listar tarefas atribuidas a uma equipa\n6 - Menu de tarefas eliminadas / nao eliminadas\n");
-        scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            count = 0;
-            printf("Tarefas em execucao: \n");
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida == 0 && !listaTarefas[i].eliminada)
-                {
-                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
-                        break;
-                    }
-                    printf("Nome: %s\n", listaTarefas[i].nomeTarefa);
-                    printf("Data de criacao da tarefa: %d/%d/%d\n", listaTarefas[i].dataCriacao.dias, listaTarefas[i].dataCriacao.mes, listaTarefas[i].dataCriacao.ano);
-                    count++;
-                    
-                }
-            }
-            if(count == 0)
-                printf("Não existem tarefas em execucao\n"); 
-            
-        break;
-        case 2:
-            count = 0;
-            int duracao;
-            printf("Tarefas concluidas: \n");
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida == 1 && !listaTarefas[i].eliminada)
-                {
-                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
-                        break;
-                    }
-                    printf("Nome: %s\n", listaTarefas[i].nomeTarefa);
-                    duracao = diferencaDias(listaTarefas[i].dataCriacao, listaTarefas[i].dataConclusao);
-                    printf("Esta tarefa demorou %d dias a ser concluida\n", duracao);
-                    duracao = 0;
-                    count++;
-                }
-            }
-            if (count == 0)
-            {
-                printf("Nao existem tarefas concluidas\n");
-            }
-        break;
-        case 3:
-            count = 0;
-            printf("Tarefas em execucao que ultrapassaram o prazo de conclusao: ");
-            for (int i = 0; i < 100; i++)
-            {
-                if (!listaTarefas[i].concluida && !listaTarefas[i].eliminada && diferencaDias(listaTarefas[i].dataLimiteExecucao, hoje) < 0)
-                {
-                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
-                        break;
-                    }
-                    printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
-                    printf("Data limite de execucao da tarefa: %d/%d/%d\n", listaTarefas[i].dataLimiteExecucao.dias,listaTarefas[i].dataLimiteExecucao.mes,listaTarefas[i].dataLimiteExecucao.ano);
-                    count++;
-                }    
-            }
-            if(count == 0){
-                printf("Nao existem tarefas em atraso\n");
-            }
-        break;
-        case 4:
-            count = 0;
-            printf("Tarefas concluidas com atraso: \n");
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada && diferencaDias(listaTarefas[i].dataLimiteExecucao, listaTarefas[i].dataConclusao) < 0)
-                {
-                    if(listaTarefas[i].nomeTarefa[0] == '\0'){
-                        break;
-                    }
-                    int duracao = diferencaDias(listaTarefas[i].dataLimiteExecucao, listaTarefas[i].dataConclusao);
-                    printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
-                    printf("Dias de atraso: %d\n", -(duracao));
-                    count++;
-                }    
-            }
-            if(count == 0){
-                printf("Não existem tarefas concluidas com atraso\n");
-                break;
-                }
-        break;
-        case 5:
-            count = 0;
-            do
-            {
-                printf("Indique um nome presente na equipa de que pretende listar as tarefas: ");
-                scanf("%s", nomeEquipa);
-                for (int i = 0; i < 100; i++)
-                {
-                    if (!listaTarefas[i].eliminada)
-                    {
-                        for (int j = 0; j < listaTarefas[i].responsavel.numMembros; j++)
-                        {
-                            if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa) == 0)
-                            {
-                                if(listaTarefas[i].nomeTarefa[0] == '\0'){
-                                    break;
-                                }
-                                printf("Nome da tarefa: %s\n", listaTarefas[i].nomeTarefa);
-                                printf("Data de conclusao da tarefa: %d/%d/%d\n", listaTarefas[i].dataConclusao.dias, listaTarefas[i].dataConclusao.mes, listaTarefas[i].dataConclusao.ano);
-                                count++;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (count == 0)
-                {
-                    printf("Nao foi encontrada nenhuma tarefa com o nome indicado\n");
-                }    
-            } while (true);
-        break;
-        case 6:
-        menuTarefasEliminadas(listaTarefas);
-        break;
-        default:
-            break;
-        }
-    } while (opcao != 0);
 }
 
 void menuRegistoTarefa(projeto listaProjetos[100]){
@@ -906,8 +601,6 @@ void menuRegistoProjeto(projeto listaProjetos[100]){
     scanf("%s", dataConclusao);
     sscanf(dataConclusao, "%d/%d/%d", &projeto1.dataConclusao.dias,&projeto1.dataConclusao.mes,&projeto1.dataConclusao.ano);
     
-    projeto1.cancelado = 0;
-    projeto1.eliminado = 0;
     for (int i = 0; i < 100; i++)
     {
         if(listaProjetos[i].nomeProjeto[0] == '\0'){
@@ -940,7 +633,7 @@ void alterarProjeto(projeto listaProjetos[100]){
         bool encontrada = false;
         for (int i = 0; i < 100; i++)
         {
-            if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0 && !listaProjetos[i].eliminado)
+            if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0)
             {
                 
                 int opcao=0;
@@ -1002,9 +695,8 @@ void cancelarProjeto(projeto listaProjetos[100]){
         bool eliminada = false; 
         for (int i = 0; i < 100; i++)
         {
-            if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0 && !listaProjetos[i].cancelado)
+            if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0)
             {
-                listaProjetos[i].cancelado = true;
                 printf("Projeto cancelado com sucesso!\n");
                 eliminada = true;
                 char c;
@@ -1061,6 +753,106 @@ void menuPrincipalProjetos(projeto listaProjetos[100]){
             break;
         }
     } while (opcao != 0);
+}
+void listarTarefasExecucao(projeto listaProjetos[100]){
+    char nomeProjeto[20];
+    printf("Indique o nome do projeto a listar: ");
+    scanf("%s", nomeProjeto);
+    for (int i = 0; i < 100; i++)
+    {
+        
+    }  
+}
+
+void listarTarefasEmExecucao(projeto listaProjetos[100]){
+
+    char nomeProjeto[50];
+    bool encontrouProjeto = false;
+    bool encontrouTarefa = false;
+
+    printf("Indique o nome do projeto que pretende listar as tarefas em exeucao");
+    scanf("%s", nomeProjeto);
+    int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
+    if (indiceProjeto == 1)
+    {
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        return;
+    }
+    encontrouProjeto = true;
+    tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
+    printf("Tarefas em execucao do projeto %s", listaProjetos[indiceProjeto]);
+    do
+    {
+        encontrouTarefa = true;
+        printf("Nome da tarefa: %s Data de inicio da tarefa: %d/%d/%d", t->nomeTarefa, t->dataCriacao.dias,t->dataCriacao.mes,t->dataCriacao.ano);
+    
+        if (t != NULL)
+        {
+            t = t->seguinte;
+        }
+        
+    } while (t != NULL);
+    if(!encontrouTarefa){
+        printf("Nao existem tarefas em execucao no projeto de nome %s\n", nomeProjeto);
+    }    
+}
+void listarTarefasConcluidas(projeto listaProjetos[100]){
+
+    char nomeProjeto[50];
+    bool encontrouProjeto = false;
+    bool encontrouTarefa = false;
+
+    printf("Indique o nome do projeto que pretende listar as tarefas em exeucao");
+    scanf("%s", nomeProjeto);
+    int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
+    if (indiceProjeto == 1)
+    {
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        return;
+    }
+    encontrouProjeto = true;
+    tarefa *t = listaProjetos[indiceProjeto].tarefasConcluidas;
+    printf("Tarefas em execucao do projeto %s", listaProjetos[indiceProjeto]);
+    do
+    {
+        encontrouTarefa = true;
+        printf("Nome da tarefa: %s Duracao da conclusao da tarefa: %d", t->nomeTarefa,"Dias de duracao da tarefa: " diferencaDias(t->dataCriacao, t->dataConclusao));
+    
+        if (t != NULL)
+        {
+            t = t->seguinte;
+        }
+        
+    } while (t != NULL);
+    if(!encontrouTarefa){
+        printf("Nao existem tarefas em execucao no projeto de nome %s\n", nomeProjeto);
+    }    
+}
+void menuListagemProjetos(projeto listaProjetos[100]){
+char nomeProjeto[20];
+int opcao;
+do
+{
+    printf("Indique 0 - Sair\n1 - Listagem de tarefas em execucao\n2 - Listagem de tarefas concluidas\n3 - Listagem de tarefas que ultrapassaram o prazo de conclusao\n4 - Listagem de tarefas concluidas com atraso\n5 - Listagem de tarefas atribuidas a uma equipa\n");
+    switch (opcao)
+    {
+    case 1:
+        listarTarefasEmExecucao(listaProjetos);
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        break;
+    default:
+        break;
+    }
+} while (opcao != 0);
+
+
 }
 void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100], projeto listaProjetos[100]){
     int opcao;
