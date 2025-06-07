@@ -93,6 +93,32 @@ int diferencaDias(data dataInicio,data dataFim ){
 
     return diasFim - diasInicio;
 }
+//Função auxiliar que permite contar o número total de projetos não cancelados na lista de projetos
+int countProjetosNaoCancelados(projeto listaProjetos[100]){
+    int count = 0;
+
+    for (int i = 0; i < 100; i++)
+    {
+        if (!verificaCancelado(listaProjetos[i]))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+//Função auxiliar que permite contar o total de projetos presentes na lista de projetos
+int countProjetos(projeto listaProjetos[100]){
+    int count = 0;
+
+    for (int i = 0; i < 100; i++)
+    {
+        if (listaProjetos[i].nomeProjeto[0] != '\0')
+        {
+            count++;
+        }
+    }
+    return count;
+}
 //Função auxiliar para obter a duração média das tarefas de uma tarefa em específico
 int obterDuracaoMediaTarefas(tarefa *t){
 
@@ -1046,7 +1072,7 @@ void duracaoTarefasConcluidasPrazo(projeto listaProjetos[100]){
 
 void numeroTarefasExecucao(projeto listaProjetos[100]){
 
- char nomeProjeto[50];
+    char nomeProjeto[50];
     bool encontrouProjeto = false;
     int countTarefas = 0;
     printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
@@ -1099,13 +1125,123 @@ do
         break;
     case 7:
         tarefasConcluidasDentroForaPrazo(listaProjetos);
+        break;
     case 8:
-        
+        numeroTarefasExecucao(listaProjetos);
+        break;
     default:
+        printf("Escolha uma opcao entre as indicadas!\n");
         break;
     }
 } while (opcao != 0);
+}
+//Função utiliza bubblesort
+void ordenarTarefasNaoConcluidas(projeto listaProjetos[100]){
 
+    char nomeProjeto[50];
+     printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
+    scanf("%s", nomeProjeto);
+    int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
+    if (indiceProjeto == -1)
+    {
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        return;
+    }
+    tarefa *inicio = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
+    
+    if (inicio == NULL || inicio->seguinte == NULL)
+    {
+        prinf("Nao existem tarefas suficientes para ordenar!\n");
+        return;
+    }
+    bool troca;
+    do
+    {
+        troca = false;
+        tarefa *atual = inicio;
+        tarefa *anterior = NULL;
+        tarefa *seguinte = NULL;
+
+        while (atual != NULL && atual->seguinte != NULL)
+        {
+            seguinte = atual ->seguinte;
+            if (diferencaDias(atual->dataLimiteExecucao, seguinte->dataLimiteExecucao) > 0)
+            {
+                troca = true;
+                if (anterior == NULL)
+                {
+                    atual ->seguinte = seguinte->seguinte;
+                    seguinte->seguinte = atual;
+                    inicio = seguinte;
+                    anterior = seguinte;
+
+                }else{
+                    anterior -> seguinte = seguinte;
+                    atual -> seguinte = seguinte -> seguinte;
+                    seguinte -> seguinte = atual;
+                    anterior = seguinte;
+                }    
+            }
+            else{
+                anterior = atual;
+                atual = atual -> seguinte;
+            }
+        }
+    } while (troca);
+    listaProjetos[indiceProjeto].tarefasNaoConcluidas = inicio;
+    printf("As tarefas do projeto de nome: %s foram ordenadas com sucesso", nomeProjeto);
+}
+//Função auxiliar que conta o número de tarefas da lista de tarefas nao concluídas
+int countTarefasPorConcluir(tarefa *listaTarefa){
+
+    int count = 0;
+    while (listaTarefa != NULL)
+    {
+        count++;
+        listaTarefa = listaTarefa -> seguinte;
+    }
+    return count;
+}
+
+void ordenarProjetosTarefasPorConcluir(projeto listaProjetos[100]){
+
+    int totalProjetosAtivos = countProjetosNaoCancelados(listaProjetos);
+    for (int i = 0; i < totalProjetosAtivos-1; i++)
+    {
+        for (int j = 0; j < totalProjetosAtivos; j++)
+        {
+            int tarefasI = countTarefasPorConcluir(listaProjetos[i].tarefasNaoConcluidas);
+            int tarefasJ = countTarefasPorConcluir(listaProjetos[j].tarefasNaoConcluidas);
+
+            if (tarefasJ > tarefasI)
+            {
+                projeto temp = listaProjetos[i];
+                listaProjetos[i] = listaProjetos[j];
+                listaProjetos[j] = temp;
+            }
+        }
+    }
+    printf("Projetos ordenados por ordem decrescente de numero de tarefas por concluir\n");
+}
+
+void menuOrdenacaoProjetos(projeto listaProjetos[100]){
+int opcao;
+do
+{
+    printf("Indique 0 - Sair\n1 - Ordenar as tarefas nao concluidas de cada projeto por ordem de urgencia\n2 - Ordenas os projetos por ordem decrescente de numero de tarefas por concluir\n");
+    switch (opcao)
+    {
+    case 1:
+        ordenarTarefasNaoConcluidas(listaProjetos);
+        break;
+    case 2:
+        ordenarProjetosTarefasPorConcluir(listaProjetos);
+        break;
+    default:
+        printf("Escolha uma opcao entre as indicadas!\n");
+        break;
+    }
+} while (opcao != 0);
 
 }
 void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100], projeto listaProjetos[100]){
