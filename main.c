@@ -39,6 +39,7 @@ typedef struct projeto
     data dataConclusao;
     tarefa *tarefasConcluidas;
     tarefa *tarefasNaoConcluidas;
+    bool cancelado;
 }projeto;
 
 data obterDataHoje(){
@@ -169,6 +170,15 @@ int diferencaDias(data dataInicio,data dataFim ){
     int diasFim = dataFim.ano * 365 + dataFim.mes * 30 + dataFim.dias;
 
     return diasFim - diasInicio;
+}
+bool verificaConcluido(projeto p){
+
+    if (p.tarefasConcluidas != NULL && p.tarefasNaoConcluidas == NULL && p.cancelado == false)
+    {
+        return true;
+    }
+    return false;
+
 }
 //Função auxiliar que pretende indicar se o projeto se encontra cancelado
 bool verificaCancelado(projeto p){
@@ -597,6 +607,7 @@ void menuRegistoProjeto(projeto listaProjetos[100]){
     sscanf(dataConclusao, "%d/%d/%d", &projeto1.dataConclusao.dias,&projeto1.dataConclusao.mes,&projeto1.dataConclusao.ano);
     projeto1.tarefasConcluidas = NULL;
     projeto1.tarefasNaoConcluidas = NULL;
+    projeto1.cancelado = false;
     for (int i = 0; i < 100; i++)
     {
         if(listaProjetos[i].nomeProjeto[0] == '\0'){
@@ -661,17 +672,21 @@ void alterarProjeto(projeto listaProjetos[100]){
                         sscanf(novaDataConclusao, "%d/%d/%d", &listaProjetos[i].dataConclusao.dias, &listaProjetos[i].dataConclusao.mes, &listaProjetos[i].dataConclusao.ano);
                         printf("Data de conclusao do projeto alterada com sucesso! \n");         
                         break;
+                    case 0:
+                        printf("Sair do menu de edicao de projetos\n");
+                        break;
                     default:
                         printf("Insira uma opcao entre as indicadas!\n");
                         break;
                     }
                 } while (opcao != 0);
-                printf("Nenhum projeto encontrado com o nome indicado\n");
+                
+                
             }
         }
 
         if (!encontrada && opcao != 0) {
-            printf("Nenhuma tarefa encontrada com o nome indicado!\n0 - Sair\n1 - Tentar novamente\n");
+            printf("Nenhum projeto encontrado com o nome indicado!\n0 - Sair\n1 - Tentar novamente\n");
             scanf("%d", &opcao);
             if (opcao == 0) break;
         } else {
@@ -708,6 +723,7 @@ void eliminarProjeto(projeto listaProjetos[100]){
                 eliminado = true;
                 eliminarTarefaAux(listaProjetos[i].tarefasConcluidas);
                 eliminarTarefaAux(listaProjetos[i].tarefasNaoConcluidas);
+                printf("Projeto eliminado com sucesso!\n");
                 char c;
                 printf("Prima qualquer tecla para regressar ao menu principal");
                 getchar();
@@ -738,6 +754,7 @@ void cancelarProjeto(projeto listaProjetos[100]){
         {
             if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0)
             {
+                listaProjetos[i].cancelado = true;
                 printf("Projeto cancelado com sucesso!\n");
                 eliminada = true;
                 char c;
@@ -973,7 +990,13 @@ void tarefasConcluidasDentroForaPrazo(projeto listaProjetos[100]){
         printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
         return;
     }
-
+    projeto projetoAux = listaProjetos[indiceProjeto];
+    if (verificaConcluido(projetoAux))
+    {
+        
+    }
+    
+    
 }
 
 void duracaoTarefasConcluidasPrazo(projeto listaProjetos[100]){
