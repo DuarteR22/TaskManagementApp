@@ -52,40 +52,117 @@ data obterDataHoje(){
 
     return hoje;
 }
-// void guardarFicheiroTarefasResponsavel(responsavel listaResponsavel[100]){
-//     FILE *ftarefas = fopen("tarefas.dat", "wb");
-//     FILE *fresponsavel = fopen("responsavel.dat", "wb");
+void guardarFicheiroProjetosResponsavel(projeto listaProjetos[100], responsavel listaResponsavel[100]){
+    FILE *fprojeto = fopen("projetos.dat", "wb");
+    FILE *fresponsavel = fopen("responsavel.dat", "wb");
 
-//     if (ftarefas == NULL || fresponsavel == NULL)
-//     {
-//         printf("Erro ao abrir os ficheiros de tarefas ou responsaveis\n");
-//         return;
-//     }
-//     fwrite(listaTarefas, sizeof(tarefa), 100, ftarefas);
-//     fwrite(listaResponsavel, sizeof(responsavel), 100, fresponsavel);
+    if (fprojeto == NULL || fresponsavel == NULL)
+    {
+        printf("Erro ao abrir os ficheiros de projetos ou responsaveis\n");
+        return;
+    }
+    for (int i = 0; i < 100; i++)
+    {
+        if (listaProjetos[i].nomeProjeto[0] != '\0')
+        {
+            projeto projetoAux = listaProjetos[i];
+            projetoAux.tarefasConcluidas = NULL;
+            projetoAux.tarefasNaoConcluidas = NULL;
+            fwrite(&projetoAux, sizeof(projeto), 1, fprojeto);
+            int countNaoConcluidas=0,countConcluidas=0;
+            tarefa *t;
+            t = listaProjetos[i].tarefasNaoConcluidas;
+            while (t)
+            {
+                countNaoConcluidas++;
+                t = t->seguinte;
+            }
+            t = listaProjetos[i].tarefasConcluidas;
+            while (t)
+            {
+                countConcluidas++;
+                t = t->seguinte;
+            }
+            fwrite(&countNaoConcluidas, sizeof(int), 1, fprojeto);
+            fwrite(&countConcluidas, sizeof(int), 1, fprojeto);
 
-//     fclose(ftarefas);
-//     fclose(fresponsavel);
+            t = listaProjetos[i].tarefasNaoConcluidas;
+            
+            while (t)
+            {
+                fwrite(t,sizeof(tarefa), 1, fprojeto);
+                t = t->seguinte;
+            }
+            t = listaProjetos[i].tarefasConcluidas;
+            while (t)
+            {
+                fwrite(t,sizeof(tarefa), 1 , fprojeto);
+                t = t->seguinte;
+            }
+        }
+    }
+    fwrite(listaResponsavel, sizeof(responsavel), 100, fresponsavel);
+    fclose(fprojeto);
+    fclose(fresponsavel);
 
-// }
-// void carregaDadosFicheiroTarefasResponsavel(responsavel listaResponsavel[100]){
+}
+void carregaDadosFicheiroProjetosResponsavel(projeto listaProjetos[100],responsavel listaResponsavel[100]){
 
-//     FILE *ftarefas = fopen("tarefas.dat", "rb");
-//     FILE *fresponsavel = fopen("responsavel.dat", "rb");
+    FILE *fprojeto = fopen("projetos.dat", "rb");
+    FILE *fresponsavel = fopen("responsavel.dat", "rb");
 
-//     if (ftarefas != NULL)
-//     {
-//         fread(listaTarefas, sizeof(tarefa), 100, ftarefas);
-//     }
-//     if (fresponsavel != NULL)
-//     {
-//         fread(listaResponsavel,  sizeof(responsavel), 100, fresponsavel);
-//     }
-//     if (ftarefas != NULL)
-//         fclose(ftarefas);
-//     if(fresponsavel != NULL)
-//         fclose(fresponsavel);
-// }
+    if (fprojeto == NULL || fresponsavel == NULL)
+    {
+        printf("Erro ao abrir os ficheiros de projetos ou responsaveis\n");
+        return;
+    }
+    int i = 0;
+    while (i < 100 && fread(&listaProjetos[i],sizeof(projeto),1,fprojeto) == 1)
+    {
+        int countNaoConcluidas = 0,countConcluidas=0;
+        fread(&countNaoConcluidas,sizeof(int),1,fprojeto);
+        fread(&countConcluidas,sizeof(int),1,fprojeto);
+
+        listaProjetos[i].tarefasNaoConcluidas = NULL;
+        tarefa *ultimaNaoConcluida = NULL;
+        for (int j = 0; j < countNaoConcluidas; j++)
+        {
+            tarefa *tarefaAux = malloc(sizeof(tarefa));
+            fread(tarefaAux,sizeof(tarefa),1,fprojeto);
+            tarefaAux -> seguinte = NULL;
+
+            if (listaProjetos[i].tarefasNaoConcluidas == NULL)
+            {
+                listaProjetos[i].tarefasNaoConcluidas = tarefaAux;
+            }else{
+                ultimaNaoConcluida->seguinte = tarefaAux;
+            }
+            ultimaNaoConcluida = tarefaAux;
+        }
+        
+        listaProjetos[i].tarefasConcluidas = NULL;
+        tarefa *ultimaConcluida = NULL;
+
+        for (int j = 0; j < countConcluidas; j++)
+        {
+            tarefa *tarefaAux = malloc(sizeof(tarefa));
+            fread(tarefaAux,sizeof(tarefa),1,fprojeto);
+            tarefaAux -> seguinte = NULL;
+
+            if (listaProjetos[i].tarefasConcluidas == NULL)
+            {
+                listaProjetos[i].tarefasConcluidas = tarefaAux;
+            }else{
+                ultimaConcluida->seguinte = tarefaAux;
+            }
+            ultimaConcluida = tarefaAux;
+        }
+        i++;
+    }
+    fread(listaResponsavel,sizeof(responsavel),100,fresponsavel);
+    fclose(fprojeto);
+    fclose(fresponsavel);   
+}
 //Função auxiliar para obter a diferença entre duas datas em dias
 int diferencaDias(data dataInicio,data dataFim ){
     int diasInicio = dataInicio.ano * 365 + dataInicio.mes*30 + dataInicio.dias;
@@ -509,13 +586,17 @@ void menuRegistoProjeto(projeto listaProjetos[100]){
     printf("Indique o nome do projeto a registar: ");
     scanf("%s", nomeProjeto);
     strcpy(projeto1.nomeProjeto, nomeProjeto);
+    printf("Indique o nome do responsavel pelo projeto: ");
+    scanf("%s", nomeResponsavel);
+    strcpy(projeto1.nomeResponsavel, nomeResponsavel);
     printf("Indique a data prevista de inicio do projeto [dd/mm/aaaa]: ");
     scanf("%s", dataInicio);
     sscanf(dataInicio, "%d/%d/%d", &projeto1.dataInicio.dias,&projeto1.dataInicio.mes,&projeto1.dataInicio.ano);
     printf("Indique a data prevista de conclusao do projeto [dd/mm/aaaa]: ");
     scanf("%s", dataConclusao);
     sscanf(dataConclusao, "%d/%d/%d", &projeto1.dataConclusao.dias,&projeto1.dataConclusao.mes,&projeto1.dataConclusao.ano);
-    
+    projeto1.tarefasConcluidas = NULL;
+    projeto1.tarefasNaoConcluidas = NULL;
     for (int i = 0; i < 100; i++)
     {
         if(listaProjetos[i].nomeProjeto[0] == '\0'){
@@ -1443,8 +1524,8 @@ int main(){
 
     responsavel listaResponsavel[100] ;
     projeto listaProjetos[100];
-    //carregaDadosFicheiroTarefasResponsavel(listaResponsavel);
+    carregaDadosFicheiroProjetosResponsavel(listaProjetos,listaResponsavel);
     menuPrincipal( listaResponsavel, listaProjetos);
-    //guardarFicheiroTarefasResponsavel(listaResponsavel);
+    guardarFicheiroProjetosResponsavel(listaProjetos,listaResponsavel);
     return 0;
 }
