@@ -52,46 +52,54 @@ data obterDataHoje(){
 
     return hoje;
 }
-void guardarFicheiroTarefasResponsavel(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
-    FILE *ftarefas = fopen("tarefas.dat", "wb");
-    FILE *fresponsavel = fopen("responsavel.dat", "wb");
+// void guardarFicheiroTarefasResponsavel(responsavel listaResponsavel[100]){
+//     FILE *ftarefas = fopen("tarefas.dat", "wb");
+//     FILE *fresponsavel = fopen("responsavel.dat", "wb");
 
-    if (ftarefas == NULL || fresponsavel == NULL)
-    {
-        printf("Erro ao abrir os ficheiros de tarefas ou responsaveis\n");
-        return;
-    }
-    fwrite(listaTarefas, sizeof(tarefa), 100, ftarefas);
-    fwrite(listaResponsavel, sizeof(responsavel), 100, fresponsavel);
+//     if (ftarefas == NULL || fresponsavel == NULL)
+//     {
+//         printf("Erro ao abrir os ficheiros de tarefas ou responsaveis\n");
+//         return;
+//     }
+//     fwrite(listaTarefas, sizeof(tarefa), 100, ftarefas);
+//     fwrite(listaResponsavel, sizeof(responsavel), 100, fresponsavel);
 
-    fclose(ftarefas);
-    fclose(fresponsavel);
+//     fclose(ftarefas);
+//     fclose(fresponsavel);
 
-}
-void carregaDadosFicheiroTarefasResponsavel(tarefa listaTarefas[100], responsavel listaResponsavel[100]){
+// }
+// void carregaDadosFicheiroTarefasResponsavel(responsavel listaResponsavel[100]){
 
-    FILE *ftarefas = fopen("tarefas.dat", "rb");
-    FILE *fresponsavel = fopen("responsavel.dat", "rb");
+//     FILE *ftarefas = fopen("tarefas.dat", "rb");
+//     FILE *fresponsavel = fopen("responsavel.dat", "rb");
 
-    if (ftarefas != NULL)
-    {
-        fread(listaTarefas, sizeof(tarefa), 100, ftarefas);
-    }
-    if (fresponsavel != NULL)
-    {
-        fread(listaResponsavel,  sizeof(responsavel), 100, fresponsavel);
-    }
-    if (ftarefas != NULL)
-        fclose(ftarefas);
-    if(fresponsavel != NULL)
-        fclose(fresponsavel);
-}
+//     if (ftarefas != NULL)
+//     {
+//         fread(listaTarefas, sizeof(tarefa), 100, ftarefas);
+//     }
+//     if (fresponsavel != NULL)
+//     {
+//         fread(listaResponsavel,  sizeof(responsavel), 100, fresponsavel);
+//     }
+//     if (ftarefas != NULL)
+//         fclose(ftarefas);
+//     if(fresponsavel != NULL)
+//         fclose(fresponsavel);
+// }
 //Função auxiliar para obter a diferença entre duas datas em dias
 int diferencaDias(data dataInicio,data dataFim ){
     int diasInicio = dataInicio.ano * 365 + dataInicio.mes*30 + dataInicio.dias;
     int diasFim = dataFim.ano * 365 + dataFim.mes * 30 + dataFim.dias;
 
     return diasFim - diasInicio;
+}
+//Função auxiliar que pretende indicar se o projeto se encontra cancelado
+bool verificaCancelado(projeto p){
+
+    if(p.tarefasConcluidas == NULL && p.tarefasNaoConcluidas == NULL)
+        return true;
+
+    return false;
 }
 //Função auxiliar que permite contar o número total de projetos não cancelados na lista de projetos
 int countProjetosNaoCancelados(projeto listaProjetos[100]){
@@ -159,122 +167,8 @@ int indiceProjetoAux(projeto listaProjetos[100], char nomeProjeto[50]) {
     }
     return -1;
 }   
-//Função auxiliar que pretende indicar se o projeto se encontra cancelado
-bool verificaCancelado(projeto p){
 
-    if(p.tarefasConcluidas == NULL && p.tarefasNaoConcluidas == NULL)
-        return true;
 
-    return false;
-}
-void menuEquipas(responsavel listaResponsavel [100], tarefa listaTarefas[100]){
-    char nomeEquipa[20];
-    int opcao;
-    do
-    {
-        printf("0 - Sair\n1 - Determinar duracao media de realizacao de tarefas de uma equipa\n2 - Determinar numero de tarefas concluidas por uma equipa dentro e fora do prazo\n3 - Determinar o numero de tarefas em execucao de uma equipa\nIndique a opcao que deseja: ");
-        scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            printf("Indique o nome da equipa a pesquisar: ");
-            scanf("%s", nomeEquipa);
-            int duracoes = 0;
-            int count = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
-                {
-                    for (int j = 0; j < 20; j++)
-                    {
-                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
-                        {
-                            int duracao = diferencaDias(listaTarefas[i].dataConclusao, listaTarefas[i].dataCriacao);
-                            duracoes += duracao;
-                            count++;
-                            break;
-                        }
-                    }
-                }  
-            }
-            if (count > 0)
-            {
-                float media = (float)duracoes / count;
-                printf("Duracao media de realizacao das tarefas concluidas pela equipa %s em dias e %f\n", nomeEquipa, -(media));
-            }
-            if (count == 0)
-            {
-                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
-            }
-            break;  
-        case 2:
-            printf("Indique o nome da equipa a pesquisar: ");
-            scanf("%s", nomeEquipa);
-            int countTarefasDentroPrazo = 0;
-            int countTarefasForaPrazo = 0;
-            for (int i = 0; i < 100; i++)
-            {
-                if (listaTarefas[i].concluida && !listaTarefas[i].eliminada)
-                {
-                    for (int j = 0; j < 20; j++)
-                    {
-                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
-                        {
-                            if (diferencaDias(listaTarefas[i].dataConclusao, listaTarefas[i].dataLimiteExecucao) <= 0)
-                            {
-                                countTarefasDentroPrazo++;
-                                break;
-                            }
-                            else{
-                                countTarefasForaPrazo++;
-                                break;
-                            }
-                        }
-                    }
-                }  
-            }
-            if (countTarefasDentroPrazo == 0 && countTarefasForaPrazo == 0)
-            {
-                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
-            }
-            break;
-        case 3:
-            printf("Indique o nome da equipa a pesquisar: ");
-            scanf("%s", nomeEquipa);
-            int countExecucao = 0;
-            int duracao;
-            data hoje = obterDataHoje();
-            for (int i = 0; i < 100; i++)
-            {
-                if (!listaTarefas[i].concluida && !listaTarefas[i].eliminada)
-                {
-                    for (int j = 0; j < 20; j++)
-                    {
-                        if (strcmp(listaTarefas[i].responsavel.nomes[j], nomeEquipa)== 0)
-                        {
-                            duracao = diferencaDias(hoje, listaTarefas[i].dataCriacao);
-                            printf("A tarefa de nome %s esta em execucao a %d dias\n", listaTarefas[i].nomeTarefa, duracao);
-                            countExecucao++;
-                            break;
-                        }
-                    }
-                }  
-            }
-            if (countExecucao == 0)
-            {
-                printf("Nao existe nenhuma tarefa concluida por uma equipa com o nome %s ou introduziu um nome errado!\n", nomeEquipa);
-                break;
-            }
-            else{
-                printf("Existem %d tarefas em execucao", countExecucao);
-                break;
-            }
-            default:
-                printf("Indique uma opcao dentro das indicadas!");
-                break;
-        }
-    } while (opcao != 0);
-}
 
 void alocarEquipa(projeto listaProjetos[100], responsavel listaResponsavel[100]) {
     char nomeProjeto[50];
@@ -315,8 +209,9 @@ void alocarEquipa(projeto listaProjetos[100], responsavel listaResponsavel[100])
                         t->responsavel.equipa = true;
                         encontrouResponsavel = true;
                         printf("Equipa alocada com sucesso a tarefa\n");
-                        break;
                     }   
+                    break;
+
                 }
                 break; 
             }
@@ -464,7 +359,7 @@ void eliminarTarefa(projeto listaProjetos[100]){
 void concluirTarefa(projeto listaProjetos[100]){
     char nomeProjeto[50],nomeTarefa[50];
     bool encontrada = false;
-    printf("Indique o nome do projeto que pretende alterar a tarefa: ");
+    printf("Indique o nome do projeto da tarefa que pretende concluir: ");
     scanf("%s", nomeProjeto);
 
     int indiceProjeto = indiceProjetoAux(listaProjetos,nomeProjeto);
@@ -511,6 +406,8 @@ void menuRegistoTarefa(projeto listaProjetos[100]){
 
     tarefa tarefa1;
     char nomeProjeto[50];
+    printf("Indique o nome do projeto da tarefa que pretende concluir: ");
+    scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos,nomeProjeto);
     if (indiceProjeto == -1)
     {
@@ -602,47 +499,7 @@ void menuCriacaoEquipa(responsavel listaResponsavel[100]) {
         }
     } while (opcao1 != 0);
 }
-void menuPrincipalTarefas(tarefa listaTarefas[100], responsavel listaResponsavel[100], projeto listaProjetos[100]){
-    int opcao;
-    do
-    {
-        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de listagem de tarefas\n8 - Ordenar tarefas nao concluidas por ordem de urgencia\n9 - Menu de equipas\nIndique a opcao que deseja: ");
-        scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            menuRegistoTarefa(listaProjetos);
-            break;  
-        case 2:
-            menuCriacaoEquipa(listaResponsavel);
-            break;
-        case 3:
-            alterarTarefa(listaProjetos, listaResponsavel);
-            break;
-        case 4:
-            concluirTarefa(listaProjetos);
-            break;
-        case 5:
-            eliminarTarefa(listaProjetos);
-            break;
-        case 6:
-            alocarEquipa(listaProjetos, listaResponsavel);
-            break;
-        case 8:
-            break;
-        case 7:
-            break;
-        case 9:
-            menuEquipas(listaResponsavel, listaTarefas);
-            break;
-        case 10:
-            break;
-        default:
-            printf("Termino do programa\n");
-            break;
-        }
-    } while (opcao != 0);
-}
+
 
 
 void menuRegistoProjeto(projeto listaProjetos[100]){
@@ -693,7 +550,7 @@ void alterarProjeto(projeto listaProjetos[100]){
         {
             if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0)
             {
-                
+                encontrada = true;
                 int opcao=0;
                 do
                 {
@@ -728,7 +585,7 @@ void alterarProjeto(projeto listaProjetos[100]){
                         break;
                     }
                 } while (opcao != 0);
-                printf("Nenhuma tarefa encontrada com o nome indicado\n");
+                printf("Nenhum projeto encontrado com o nome indicado\n");
             }
         }
 
@@ -742,7 +599,8 @@ void alterarProjeto(projeto listaProjetos[100]){
 
     } while (true);
 }
-void eliminarTarefa(tarefa *listaTarefa){
+//Função auxiliar para eliminar uma tarefa individualmente, utilizada pela função de eliminar projeto
+void eliminarTarefaAux(tarefa *listaTarefa){
     tarefa *atual = listaTarefa;
     while (atual != NULL)
     {
@@ -767,8 +625,8 @@ void eliminarProjeto(projeto listaProjetos[100]){
             if (strcmp(listaProjetos[i].nomeProjeto, nomeProjeto) == 0)
             {
                 eliminado = true;
-                eliminarTarefa(listaProjetos[i].tarefasConcluidas);
-                eliminarTarefa(listaProjetos[i].tarefasNaoConcluidas);
+                eliminarTarefaAux(listaProjetos[i].tarefasConcluidas);
+                eliminarTarefaAux(listaProjetos[i].tarefasNaoConcluidas);
                 char c;
                 printf("Prima qualquer tecla para regressar ao menu principal");
                 getchar();
@@ -817,46 +675,6 @@ void cancelarProjeto(projeto listaProjetos[100]){
             break; 
         }
     } while (true);
-}
-void menuPrincipalProjetos(projeto listaProjetos[100]){
-    int opcao;
-    do
-    {
-        printf("0 - Sair\n1 - Registar novo projeto\n2 - Editar projeto\n3 - Eliminar projeto\n4 - Cancelar projeto\n5 - Menu de listagem de projetos\n6 - Menu de ordenacao de projetos\n7 - Apresentar resumo de projeto concluido\nIndique a opcao que deseja: ");
-        scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            menuRegistoProjeto(listaProjetos);
-            break;  
-        case 2:
-            alterarProjeto(listaProjetos);
-            break;
-        case 3:
-            
-            break;
-        case 4:
-            cancelarProjeto(listaProjetos);
-            break;
-        case 5:
-            menuListagemProjetos(listaProjetos);
-            break;
-        case 6:
-            menuOrdenacaoProjetos(listaProjetos);
-            break;
-        case 8:
-            break;
-        case 7:
-            break;
-        case 9:
-            break;
-        case 10:
-            break;
-        default:
-            printf("Termino do programa\n");
-            break;
-        }
-    } while (opcao != 0);
 }
 
 
@@ -1156,7 +974,6 @@ void numeroTarefasExecucao(projeto listaProjetos[100]){
 }
 void projetosCancelados(projeto listaProjetos[100]){
 
-
     int count = countProjetosCancelados(listaProjetos);
     if (count == 0)
     {
@@ -1180,6 +997,7 @@ int opcao;
 do
 {
     printf("Indique 0 - Sair\n1 - Listagem de tarefas em execucao\n2 - Listagem de tarefas concluidas\n3 - Listagem de tarefas que ultrapassaram o prazo de conclusao\n4 - Listagem de tarefas concluidas com atraso\n5 - Listagem de tarefas atribuidas a uma equipa\n6 - Duracao media de realizacao das tarefas concluidas\n7 - Numero de tarefas concluidas dentro e fora do prazo\n8 - Numero de tarefas em execucao com a duracao atual\n9 - Listar projetos cancelados\n");
+    scanf("%d", &opcao);
     switch (opcao)
     {
     case 1:
@@ -1206,6 +1024,8 @@ do
     case 8:
         numeroTarefasExecucao(listaProjetos);
         break;
+    case 9:
+        projetosCancelados(listaProjetos);
     default:
         printf("Escolha uma opcao entre as indicadas!\n");
         break;
@@ -1228,7 +1048,7 @@ void ordenarTarefasNaoConcluidas(projeto listaProjetos[100]){
     
     if (inicio == NULL || inicio->seguinte == NULL)
     {
-        prinf("Nao existem tarefas suficientes para ordenar!\n");
+        printf("Nao existem tarefas suficientes para ordenar!\n");
         return;
     }
     bool troca;
@@ -1306,6 +1126,7 @@ int opcao;
 do
 {
     printf("Indique 0 - Sair\n1 - Ordenar as tarefas nao concluidas de cada projeto por ordem de urgencia\n2 - Ordenas os projetos por ordem decrescente de numero de tarefas por concluir\n");
+    scanf("%d", &opcao);
     switch (opcao)
     {
     case 1:
@@ -1350,7 +1171,7 @@ void resumoPrazoDesenvolvimentoCumprido(projeto listaProjetos[100]){
 
     if (prazoCumprido)
     {
-        printf("O projeto de nome %s cumpriu o prazo de desenvolvimento\n");
+        printf("O projeto de nome %s cumpriu o prazo de desenvolvimento\n", nomeProjeto);
         return;
     }
     else
@@ -1426,7 +1247,7 @@ void resumoTarefasPrazoUltrapassado(projeto listaProjetos[100]){
     {
         if (!atual->eliminada && !atual -> concluida)
         {   
-            if (diferencaDias(atual->dataConclusao, obterDataHoje()) < 0)
+            if (diferencaDias(atual->dataLimiteExecucao, obterDataHoje()) < 0)
             {
                 count++;
             }
@@ -1467,7 +1288,7 @@ void resumoTarefaMaiorIncumprimento(projeto listaProjetos[100]){
     {
         if (!atual->eliminada && atual -> concluida)
         {   
-            if (diferencaDias(atual->dataLimiteExecucao,atual->dataConclusao) > 0)
+            if (diferencaDias(atual->dataLimiteExecucao,atual->dataConclusao) < 0)
             {
                 if(diferencaDias(atual->dataLimiteExecucao,atual->dataConclusao) > incumprimentoDias){
                     incumprimentoDias = diferencaDias(atual->dataLimiteExecucao,atual->dataConclusao);
@@ -1478,8 +1299,6 @@ void resumoTarefaMaiorIncumprimento(projeto listaProjetos[100]){
         atual = atual ->seguinte;   
     }
 
-   
-    
     if (tarefaMaiorIncumprimento == NULL)
     {
         printf("Nenhuma tarefa do projeto de nome %s ultrapassou o prazo de conclusao\n", nomeProjeto);
@@ -1504,24 +1323,98 @@ int opcao;
 do
 {
     printf("Indique 0 - Sair\n1 - Apresentar um resumo quanto ao prazo de desenvolvimento de cada projeto concluido\n2 - Apresentar um resumo do numero total de tarefas desenvolvidas\n3 - Apresentar um resumo do numero de tarefas que ultrapassaram o prazo de conclusao\n4 - Apresentar um resumo da duracao de tarefa com maior incumprimento de prazo\n");
+    scanf("%d", &opcao);
     switch (opcao)
     {
     case 1:
+        resumoPrazoDesenvolvimentoCumprido(listaProjetos);
         break;
     case 2:
+        resumoTarefasDesenvolvidas(listaProjetos);
         break;
     case 3:
+        resumoTarefasPrazoUltrapassado(listaProjetos);
         break;
     case 4:
+        resumoTarefaMaiorIncumprimento(listaProjetos);
         break;
     default:
         printf("Escolha uma opcao entre as indicadas!\n");
         break;
     }
 } while (opcao != 0);
-
 }
-void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100], projeto listaProjetos[100]){
+void menuPrincipalTarefas(responsavel listaResponsavel[100], projeto listaProjetos[100]){
+    int opcao;
+    do
+    {
+        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de equipas\nIndique a opcao que deseja: ");
+        scanf("%d", &opcao);
+        switch (opcao)
+        {
+        case 1:
+            menuRegistoTarefa(listaProjetos);
+            break;  
+        case 2:
+            menuCriacaoEquipa(listaResponsavel);
+            break;
+        case 3:
+            alterarTarefa(listaProjetos, listaResponsavel);
+            break;
+        case 4:
+            concluirTarefa(listaProjetos);
+            break;
+        case 5:
+            eliminarTarefa(listaProjetos);
+            break;
+        case 6:
+            alocarEquipa(listaProjetos, listaResponsavel);
+            break;
+        case 7:
+            break;
+        default:
+            printf("Termino do programa\n");
+            break;
+        }
+    } while (opcao != 0);
+}
+void menuPrincipalProjetos(projeto listaProjetos[100]){
+    int opcao;
+    do
+    {
+        printf("0 - Sair\n1 - Registar novo projeto\n2 - Editar projeto\n3 - Eliminar projeto\n4 - Cancelar projeto\n5 - Menu de listagem de projetos\n6 - Menu de ordenacao de projetos\n7 - Menu de resumos de projeto\nIndique a opcao que deseja: ");
+        scanf("%d", &opcao);
+        switch (opcao)
+        {
+        case 1:
+            menuRegistoProjeto(listaProjetos);
+            break;  
+        case 2:
+            alterarProjeto(listaProjetos);
+            break;
+        case 3:
+            eliminarProjeto(listaProjetos);
+            break;
+        case 4:
+            cancelarProjeto(listaProjetos);
+            break;
+        case 5:
+            menuListagemProjetos(listaProjetos);
+            break;
+        case 6:
+            menuOrdenacaoProjetos(listaProjetos);
+            break;
+        case 7:
+            menuResumoProjetos(listaProjetos);
+            break;
+        default:
+            printf("Termino do programa\n");
+            break;
+        }
+    } while (opcao != 0);
+}
+
+void menuPrincipal(responsavel listaResponsavel[100], projeto listaProjetos[100]){
     int opcao;
     do
     {
@@ -1529,14 +1422,17 @@ void menuPrincipal(tarefa listaTarefas[100], responsavel listaResponsavel[100], 
         scanf("%d", &opcao);
         switch (opcao)
         {
+        case 0:
+            printf("Termino do programa");
+            break;
         case 1:
             menuPrincipalProjetos(listaProjetos);
             break;  
         case 2:
-            menuPrincipalTarefas(listaTarefas, listaResponsavel, listaProjetos);
+            menuPrincipalTarefas(listaResponsavel, listaProjetos);
             break;
-               default:
-            printf("Termino do programa\n");
+        default:
+            printf("Escolha uma opcao entre as indicadas!\n");
             break;
         }
     } while (opcao != 0);
@@ -1546,10 +1442,9 @@ int main(){
 
 
     responsavel listaResponsavel[100] ;
-    tarefa listaTarefas[100] ;
     projeto listaProjetos[100];
-    carregaDadosFicheiroTarefasResponsavel(listaTarefas,listaResponsavel);
-    menuPrincipal(listaTarefas, listaResponsavel, listaProjetos);
-    guardarFicheiroTarefasResponsavel(listaTarefas,listaResponsavel);
+    //carregaDadosFicheiroTarefasResponsavel(listaResponsavel);
+    menuPrincipal( listaResponsavel, listaProjetos);
+    //guardarFicheiroTarefasResponsavel(listaResponsavel);
     return 0;
 }
