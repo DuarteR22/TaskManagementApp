@@ -141,6 +141,7 @@ void carregaDadosFicheiroProjetosResponsavel(projeto listaProjetos[100],responsa
             ultimaNaoConcluida = tarefaAux;
         }
         
+
         listaProjetos[i].tarefasConcluidas = NULL;
         tarefa *ultimaConcluida = NULL;
 
@@ -149,7 +150,6 @@ void carregaDadosFicheiroProjetosResponsavel(projeto listaProjetos[100],responsa
             tarefa *tarefaAux = malloc(sizeof(tarefa));
             fread(tarefaAux,sizeof(tarefa),1,fprojeto);
             tarefaAux -> seguinte = NULL;
-
             if (listaProjetos[i].tarefasConcluidas == NULL)
             {
                 listaProjetos[i].tarefasConcluidas = tarefaAux;
@@ -378,7 +378,7 @@ void alterarTarefa(projeto listaProjetos[100], responsavel listaResponsavel[100]
                         break;
                     case 3:
                         printf("Indique nova descricao a inserir na tarefa: ");
-                        scanf("%s\n", novaDescricao);
+                        scanf("%s", novaDescricao);
                         strcpy(t->descricao, novaDescricao);
                         printf("Descricao alterada com sucesso!\n");
                         break;
@@ -1152,7 +1152,7 @@ do
 void ordenarTarefasNaoConcluidas(projeto listaProjetos[100]){
 
     char nomeProjeto[50];
-     printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
+     printf("Indique o nome do projeto que pretende ordenar as tarefas nao concluidas por ordem de urgencia de conclusao: ");
     scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
@@ -1438,7 +1438,7 @@ void menuResumoProjetos(projeto listaProjetos[100]){
 int opcao;
 do
 {
-    printf("Indique 0 - Sair\n1 - Apresentar um resumo quanto ao prazo de desenvolvimento de cada projeto concluido\n2 - Apresentar um resumo do numero total de tarefas desenvolvidas\n3 - Apresentar um resumo do numero de tarefas que ultrapassaram o prazo de conclusao\n4 - Apresentar um resumo da duracao de tarefa com maior incumprimento de prazo\n");
+    printf("0 - Sair\n1 - Apresentar um resumo quanto ao prazo de desenvolvimento de cada projeto concluido\n2 - Apresentar um resumo do numero total de tarefas desenvolvidas\n3 - Apresentar um resumo do numero de tarefas que ultrapassaram o prazo de conclusao\n4 - Apresentar um resumo da duracao de tarefa com maior incumprimento de prazo\nIndique a opcao desejada: ");
     scanf("%d", &opcao);
     switch (opcao)
     {
@@ -1464,7 +1464,7 @@ void menuPrincipalTarefas(responsavel listaResponsavel[100], projeto listaProjet
     int opcao;
     do
     {
-        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\n7 - Menu de equipas\nIndique a opcao que deseja: ");
+        printf("0 - Sair\n1 - Registar nova tarefa\n2 - Criar equipa\n3 - Alterar tarefa\n4 - Concluir tarefa\n5 - Eliminar tarefa\n6 - Alocar equipa a uma tarefa\nIndique a opcao que deseja: ");
         scanf("%d", &opcao);
         switch (opcao)
         {
@@ -1485,8 +1485,6 @@ void menuPrincipalTarefas(responsavel listaResponsavel[100], projeto listaProjet
             break;
         case 6:
             alocarEquipa(listaProjetos, listaResponsavel);
-            break;
-        case 7:
             break;
         default:
             printf("Termino do programa\n");
