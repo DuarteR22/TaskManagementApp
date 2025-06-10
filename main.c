@@ -181,7 +181,7 @@ bool verificaConcluido(projeto p){
 
 }
 //Função auxiliar que pretende indicar se o projeto se encontra cancelado
-bool verificaCancelado(projeto p){
+bool verificaEliminado(projeto p){
 
     if(p.tarefasConcluidas == NULL && p.tarefasNaoConcluidas == NULL)
         return true;
@@ -194,7 +194,7 @@ int countProjetosNaoCancelados(projeto listaProjetos[100]){
 
     for (int i = 0; i < 100; i++)
     {
-        if (!verificaCancelado(listaProjetos[i]))
+        if (!listaProjetos[i].cancelado)
         {
             count++;
         }
@@ -206,7 +206,7 @@ int countProjetosCancelados(projeto listaProjetos[100]){
 
     for (int i = 0; i < 100; i++)
     {
-        if (verificaCancelado(listaProjetos[i]))
+        if (listaProjetos[i].cancelado)
         {
             count++;
         }
@@ -446,7 +446,7 @@ void eliminarTarefa(projeto listaProjetos[100]){
 void concluirTarefa(projeto listaProjetos[100]){
     char nomeProjeto[50],nomeTarefa[50];
     bool encontrada = false;
-    printf("Indique o nome do projeto da tarefa que pretende concluir: ");
+    printf("Indique o nome do projeto que contem a tarefa que pretende concluir: ");
     scanf("%s", nomeProjeto);
 
     int indiceProjeto = indiceProjetoAux(listaProjetos,nomeProjeto);
@@ -782,27 +782,57 @@ void listarTarefasEmExecucao(projeto listaProjetos[100]){
     bool encontrouProjeto = false;
     bool encontrouTarefa = false;
 
-    printf("Indique o nome do projeto que pretende listar as tarefas em exeucao");
+    printf("Indique o nome do projeto que pretende listar as tarefas em execucao: ");
     scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
     tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
-    printf("Tarefas em execucao do projeto %s", listaProjetos[indiceProjeto]);
+    printf("Tarefas em execucao do projeto %s:\n", listaProjetos[indiceProjeto]);
     do
     {
         encontrouTarefa = true;
-        printf("Nome da tarefa: %s Data de inicio da tarefa: %d/%d/%d", t->nomeTarefa, t->dataCriacao.dias,t->dataCriacao.mes,t->dataCriacao.ano);
+        printf("Nome da tarefa: %s\nData de inicio da tarefa: %d/%d/%d\n", t->nomeTarefa, t->dataCriacao.dias,t->dataCriacao.mes,t->dataCriacao.ano);
     
         if (t != NULL)
         {
             t = t->seguinte;
         }
         
+    } while (t != NULL);
+    if(!encontrouTarefa){
+        printf("Nao existem tarefas em execucao no projeto de nome %s\n", nomeProjeto);
+    }    
+}
+void listarTarefasEmExecucaoPrazoUltrapassado(projeto listaProjetos[100]){
+
+    char nomeProjeto[50];
+    bool encontrouProjeto = false;
+    bool encontrouTarefa = false;
+
+    printf("Indique o nome do projeto que pretende listar as tarefas em execucao que ultrapassaram o prazo de conclusao: ");
+    scanf("%s", nomeProjeto);
+    int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
+    if (indiceProjeto == -1)
+    {
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
+        return;
+    }
+    encontrouProjeto = true;
+    tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
+    printf("Tarefas em execucao do projeto %s:\n", listaProjetos[indiceProjeto]);
+    do
+    {
+        if (!t->concluida && !t->eliminada && diferencaDias(t->dataLimiteExecucao, obterDataHoje()) < 0)
+        {
+            printf("Nome da tarefa: %s\nData de conclusao da tarefa: %d/%d/%d\n", t->nomeTarefa, t->dataConclusao.dias,t->dataConclusao.mes,t->dataConclusao.ano);
+            encontrouTarefa = true;
+        }
+        t = t->seguinte;
     } while (t != NULL);
     if(!encontrouTarefa){
         printf("Nao existem tarefas em execucao no projeto de nome %s\n", nomeProjeto);
@@ -819,12 +849,13 @@ void listarTarefasConcluidas(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
     tarefa *t = listaProjetos[indiceProjeto].tarefasConcluidas;
     printf("Tarefas em execucao do projeto %s", listaProjetos[indiceProjeto]);
+    
     do
     {
         encontrouTarefa = true;
@@ -852,12 +883,13 @@ void listarTarefasUltrapassaramPrazo(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
     tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
     printf("Tarefas em execucao do projeto %s", listaProjetos[indiceProjeto]);
+    
     do
     {
         if (t != NULL && diferencaDias(t->dataLimiteExecucao, obterDataHoje()) < 0)
@@ -887,7 +919,7 @@ void listarTarefasConcluidasAtraso(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
@@ -924,7 +956,7 @@ void listarTarefasEquipaEspecifica(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
@@ -942,7 +974,7 @@ void listarTarefasEquipaEspecifica(projeto listaProjetos[100]){
                 if (strcmp(t->responsavel.nomes[i],nomeEquipa) == 0)
                 {
                     encontrouTarefa = true;
-                    printf("Nome da tarefa: %s Data de conclusao da tarefa: %d/%d/%d", t->nomeTarefa, t->dataConclusao.dias, t->dataConclusao.mes,t->dataConclusao.ano);
+                    printf("Nome da tarefa: %s Data de criacao da tarefa: %d/%d/%d", t->nomeTarefa, t->dataCriacao.dias, t->dataCriacao.mes,t->dataCriacao.ano);
                     break;
                 }   
             }
@@ -966,7 +998,7 @@ void duracaoMediaProjeto(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     encontrouProjeto = true;
@@ -976,27 +1008,7 @@ void duracaoMediaProjeto(projeto listaProjetos[100]){
         printf("O projeto submetido nao possui tarefas associadas ou a media de realizacao das tarefas esta errada!");
         return;
     }
-    printf("Media de duracao das tarefas concluidas do projeto %s: %d", nomeProjeto, media);     
-}
-
-void tarefasConcluidasDentroForaPrazo(projeto listaProjetos[100]){
-
-    char nomeProjeto[50];
-    printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
-    scanf("%s", nomeProjeto);
-    int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
-    if (indiceProjeto == -1)
-    {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
-        return;
-    }
-    projeto projetoAux = listaProjetos[indiceProjeto];
-    if (verificaConcluido(projetoAux))
-    {
-        
-    }
-    
-    
+    printf("Media de duracao das tarefas concluidas do projeto %s: %d\n", nomeProjeto, media);     
 }
 
 void duracaoTarefasConcluidasPrazo(projeto listaProjetos[100]){
@@ -1005,12 +1017,12 @@ void duracaoTarefasConcluidasPrazo(projeto listaProjetos[100]){
     bool encontrouProjeto = false;
     int countDentroPrazo = 0;
     int countForaPrazo = 0;
-    printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
+    printf("Indique o nome do projeto que pretende o numero de tarefas desenvolvidas dentro do prazo e o numero de tarefas desenvolvidas fora do prazo: ");
     scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     tarefa *t = listaProjetos[indiceProjeto].tarefasConcluidas;
@@ -1059,7 +1071,7 @@ void numeroTarefasExecucao(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     tarefa *t = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
@@ -1069,12 +1081,12 @@ void numeroTarefasExecucao(projeto listaProjetos[100]){
         if (t!=NULL)
         {   
             int duracao = diferencaDias(t->dataCriacao, obterDataHoje());
-            printf("Nome da tarefa: %s Duracao ate a data: %d dias", t->nomeTarefa, duracao);
+            printf("Nome da tarefa: %s\nDuracao ate a data: %d dias\n", t->nomeTarefa, duracao);
             countTarefas++;
         }
             t = t->seguinte;
     } while (t!=NULL);
-    printf("Numero total de tarefas em execucao: %d", countTarefas);
+    printf("Numero total de tarefas em execucao: %d\n", countTarefas);
 }
 void projetosCancelados(projeto listaProjetos[100]){
 
@@ -1087,7 +1099,7 @@ void projetosCancelados(projeto listaProjetos[100]){
     printf("Projetos cancelados:\n");
     for (int i = 0; i < 100; i++)
     {
-        if (verificaCancelado(listaProjetos[i]))
+        if ((listaProjetos[i]).cancelado == false)
         {
             printf("Nome do projeto: %s\n", listaProjetos[i].nomeProjeto);
             printf("Responsavel pelo projeto: %s", listaProjetos[i].nomeResponsavel);
@@ -1100,7 +1112,7 @@ char nomeProjeto[20];
 int opcao;
 do
 {
-    printf("Indique 0 - Sair\n1 - Listagem de tarefas em execucao\n2 - Listagem de tarefas concluidas\n3 - Listagem de tarefas que ultrapassaram o prazo de conclusao\n4 - Listagem de tarefas concluidas com atraso\n5 - Listagem de tarefas atribuidas a uma equipa\n6 - Duracao media de realizacao das tarefas concluidas\n7 - Numero de tarefas concluidas dentro e fora do prazo\n8 - Numero de tarefas em execucao com a duracao atual\n9 - Listar projetos cancelados\n");
+    printf("0 - Sair\n1 - Listagem de tarefas em execucao\n2 - Listagem de tarefas concluidas\n3 - Listagem de tarefas que ultrapassaram o prazo de conclusao\n4 - Listagem de tarefas concluidas com atraso\n5 - Listagem de tarefas atribuidas a uma equipa\n6 - Duracao media de realizacao das tarefas concluidas\n7 - Numero de tarefas concluidas dentro e fora do prazo\n8 - Numero de tarefas em execucao com a duracao atual\n9 - Listar projetos cancelados\nIndique a opcao que deseja: ");
     scanf("%d", &opcao);
     switch (opcao)
     {
@@ -1111,7 +1123,7 @@ do
         listarTarefasConcluidas(listaProjetos);
         break;
     case 3:
-        listarTarefasEmExecucao(listaProjetos);
+        listarTarefasEmExecucaoPrazoUltrapassado(listaProjetos);
         break;
     case 4:
         listarTarefasConcluidasAtraso(listaProjetos);
@@ -1123,7 +1135,7 @@ do
         duracaoMediaProjeto(listaProjetos);
         break;
     case 7:
-        tarefasConcluidasDentroForaPrazo(listaProjetos);
+        duracaoTarefasConcluidasPrazo(listaProjetos);
         break;
     case 8:
         numeroTarefasExecucao(listaProjetos);
@@ -1145,7 +1157,7 @@ void ordenarTarefasNaoConcluidas(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     tarefa *inicio = listaProjetos[indiceProjeto].tarefasNaoConcluidas;
@@ -1229,7 +1241,7 @@ void menuOrdenacaoProjetos(projeto listaProjetos[100]){
 int opcao;
 do
 {
-    printf("Indique 0 - Sair\n1 - Ordenar as tarefas nao concluidas de cada projeto por ordem de urgencia\n2 - Ordenas os projetos por ordem decrescente de numero de tarefas por concluir\n");
+    printf("0 - Sair\n1 - Ordenar as tarefas nao concluidas de cada projeto por ordem de urgencia\n2 - Ordenas os projetos por ordem decrescente de numero de tarefas por concluir\nIndique a opcao desejada: ");
     scanf("%d", &opcao);
     switch (opcao)
     {
@@ -1249,12 +1261,12 @@ void resumoPrazoDesenvolvimentoCumprido(projeto listaProjetos[100]){
 
     bool prazoCumprido = false; 
     char nomeProjeto[50];
-    printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
+    printf("Indique o nome do projeto que pretende saber se foi cumprido o seu prazo de desenvolvimento: ");
     scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     projeto projetoAuxiliar = listaProjetos[indiceProjeto];
@@ -1290,7 +1302,7 @@ void resumoTarefasDesenvolvidas(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     projeto projetoAuxiliar = listaProjetos[indiceProjeto];
@@ -1328,14 +1340,14 @@ void resumoTarefasDesenvolvidas(projeto listaProjetos[100]){
 }
 
 void resumoTarefasPrazoUltrapassado(projeto listaProjetos[100]){
-    int count;
+    int count=0;
     char nomeProjeto[50];
     printf("Indique o nome do projeto que pretende obter a media de realizacao das tarefas concluidas: ");
     scanf("%s", nomeProjeto);
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     projeto projetoAuxiliar = listaProjetos[indiceProjeto];
@@ -1375,7 +1387,7 @@ void resumoTarefaMaiorIncumprimento(projeto listaProjetos[100]){
     int indiceProjeto = indiceProjetoAux(listaProjetos, nomeProjeto);
     if (indiceProjeto == -1)
     {
-        printf("Projeto nao encontrado com o nome indicado ou nome indicado erradO!\n");
+        printf("Projeto nao encontrado com o nome indicado ou nome indicado errado!\n");
         return;
     }
     projeto projetoAuxiliar = listaProjetos[indiceProjeto];
